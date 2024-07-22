@@ -28,7 +28,7 @@ public class Tile : MonoBehaviour
     public int tilesRow;
     public int tilesColumn;
     public bool isOccupied = true;
-    private int boxHits = 0;
+    [SerializeField] private int boxHits = 0;
 
     public enum Colors
     {
@@ -46,7 +46,7 @@ public class Tile : MonoBehaviour
 
     void Start()
     {
-        colorOfTile = (Colors)UnityEngine.Random.Range(0, 6);
+        colorOfTile = (Colors)UnityEngine.Random.Range(0, 3);
 
         if (colorOfTile == Colors.Red)
             spriteOfTile.sprite = redSprites[0];
@@ -67,74 +67,67 @@ public class Tile : MonoBehaviour
     public static List<int> tilesWithHoles = new List<int>();
     private void OnMouseDown()
     {
-        if(adjacentTiles != null)
+        if (adjacentTiles != null && colorOfTile != Colors.None)
         {
             //identify the columns that has popped blocks
             //identify the deepest hole and match it with the closest existing block
             tilesWithHoles.Clear();
             Color color = spriteOfTile.color;
             color.a = 0;
-            //we will only iterate through columns with holes in them to perform block fallings
-            tilesWithHoles = new List<int>();
+
             for (int i = 0; i < adjacentTiles.Count; i++)
             {
                 adjacentTiles[i].spriteOfTile.color = color;
                 adjacentTiles[i].colorOfTile = Colors.None;
-                //I used hashing with the formula rows*10 + columns. This formula will support a maximum of 9x9 grid.
-                tilesWithHoles.Add((int)(adjacentTiles[i].tilesRow * 10 + adjacentTiles[i].tilesColumn));
-                Debug.Log("Eklenen hash: " + (int)(adjacentTiles[i].tilesRow * 10 + adjacentTiles[i].tilesColumn));
+                gameManager.HandleHoles(adjacentTiles[i]);
             }
+            
 
             for (int i = 0; i < adjacentTiles.Count; i++)
             {
-                //this loop will check if either there was a pop at the right, left, top or bottom of the boxes
-                if (gameManager.tileGrid[gameManager.coordinates[i].row-1, gameManager.coordinates[i].column] == adjacentTiles[i]) //top of the box              
-                    gameManager.tileGrid[gameManager.coordinates[i].row, gameManager.coordinates[i].column].boxHits++;  
-                
-                if (gameManager.tileGrid[gameManager.coordinates[i].row +1, gameManager.coordinates[i].column] == adjacentTiles[i])//bottom of the box             
-                    gameManager.tileGrid[gameManager.coordinates[i].row, gameManager.coordinates[i].column].boxHits++; 
-                
-                if (gameManager.tileGrid[gameManager.coordinates[i].row , gameManager.coordinates[i].column+1] == adjacentTiles[i]) //right of the box              
-                    gameManager.tileGrid[gameManager.coordinates[i].row, gameManager.coordinates[i].column].boxHits++; 
-                
-                if (gameManager.tileGrid[gameManager.coordinates[i].row , gameManager.coordinates[i].column-1] == adjacentTiles[i])//left of the box     
-                    gameManager.tileGrid[gameManager.coordinates[i].row, gameManager.coordinates[i].column].boxHits++;
-                
-            }
-
-            tilesWithHoles.Sort();
-            for (int i = 0; i < tilesWithHoles.Count; i++)
-            {
-                //calculate how many iterasions are needed for tiles to move to the top
-                int rowOfHole = (int)tilesWithHoles[i] / 10;
-                int collumnOfHole = tilesWithHoles[i] - rowOfHole * 10;
-                Debug.Log("Extract edilen bilgi, row: " + rowOfHole + " column: " + collumnOfHole);
-                for (int j = rowOfHole; j > 0; j--)
+                bool breakOuter = false;
+                for (int j = 0; j < gameManager.coordinates.Length; j++)
                 {
-                    if (gameManager.tileGrid[j, collumnOfHole].colorOfTile == Colors.Box)
-                        break;
-                    if (gameManager.tileGrid[j - 1, collumnOfHole].colorOfTile == Colors.Box)
-                        break;
-                    BubbleSwitchTileColors(gameManager.tileGrid[j, collumnOfHole], gameManager.tileGrid[j - 1, collumnOfHole]);
+                    
+                    if (gameManager.coordinates[j].row>0 && gameManager.tileGrid[gameManager.coordinates[j].row - 1, gameManager.coordinates[j].column] == adjacentTiles[i])
+                    { //top of the box              
+                        gameManager.tileGrid[gameManager.coordinates[j].row, gameManager.coordinates[j].column].boxHits++;
+                        breakOuter = true;
+                    }
+                    else if (gameManager.coordinates[j].row < gameManager.rows-1 && gameManager.tileGrid[gameManager.coordinates[j].row + 1, gameManager.coordinates[j].column] == adjacentTiles[i])
+                    {   
+                        //bottom of the box
+                        gameManager.tileGrid[gameManager.coordinates[j].row, gameManager.coordinates[j].column].boxHits++;
+                        breakOuter = true;
+                    }
+                    else if (gameManager.coordinates[j].column < gameManager.collumns-1  && gameManager.tileGrid[gameManager.coordinates[j].row, gameManager.coordinates[j].column + 1] == adjacentTiles[i])
+                    {
+                        //right of the box
+                        gameManager.tileGrid[gameManager.coordinates[j].row, gameManager.coordinates[j].column].boxHits++;
+                        breakOuter = true;
+                    }              
+                    else if (gameManager.coordinates[j].column > 0  && gameManager.tileGrid[gameManager.coordinates[j].row, gameManager.coordinates[j].column - 1] == adjacentTiles[i])
+                    {   
+                        //left of the box
+                        gameManager.tileGrid[gameManager.coordinates[j].row, gameManager.coordinates[j].column].boxHits++;
+                        breakOuter = true;
+                    }    
                 }
+                if (breakOuter)
+                    break;
             }
 
+
+            gameManager.UpdateColors();
             gameManager.ResetState();
             gameManager.BundleTiles();
-            gameManager.UpdateTileColors();
+            gameManager.CreateNewTiles();
+            gameManager.UpdateColors();
         }
-                  
+
     }
 
-    private void BubbleSwitchTileColors(Tile tile1, Tile tile2)
-    {
-        
-        Colors color = tile1.colorOfTile;
-        tile1.colorOfTile = tile2.colorOfTile;
-        tile2.colorOfTile = color;
-    }
-
-
+    
 
     public void UpdateColors()
     {
@@ -193,28 +186,49 @@ public class Tile : MonoBehaviour
             spriteOfTile.color = color;
         }
         else if (colorOfTile == Colors.Box)
-        {            
-            spriteOfTile.sprite = boxSprites[boxHits];
+        {
+            if (boxHits <= 1)
+            {
+                spriteOfTile.sprite = boxSprites[boxHits];
+                Color color = spriteOfTile.color;
+                color.a = 255;
+                spriteOfTile.color = color;
+            }
+            else
+            {
+                colorOfTile = Colors.None;
+                Color color = spriteOfTile.color;
+                color.a = 0;
+                spriteOfTile.color = color;
+                gameManager.HandleHoles(this);
+                for(int i=tilesRow+1; i<gameManager.rows; i++)
+                {
+                    Debug.Log("kutunun altýnda belirtilen satýrda hole arama: " + i);
+                    if (gameManager.tileGrid[i, tilesColumn].colorOfTile == Colors.None)
+                        gameManager.HandleHoles(gameManager.tileGrid[i, tilesColumn]);
+                }
+            }
+        }
+        else
+        {
+            spriteOfTile.sprite = greenSprites[b];
             Color color = spriteOfTile.color;
             color.a = 255;
             spriteOfTile.color = color;
         }
-        else
-        {          
-                spriteOfTile.sprite = greenSprites[b];
-                Color color = spriteOfTile.color;
-                color.a = 255;
-                spriteOfTile.color = color;          
-        }
-            
+
     }
 
     // Update is called once per frame
-    
+
+
     void Update()
     {
 
+
     }
 }
+
+    
 
    

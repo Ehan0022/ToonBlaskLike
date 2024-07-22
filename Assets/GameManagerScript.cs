@@ -9,6 +9,8 @@ public class GameManagerScript : MonoBehaviour
     [SerializeField] private Tile[] Tiles;
     [SerializeField] public int rows;
     [SerializeField] public int collumns;
+    [SerializeField] GameObject[] spawners;
+    [SerializeField] GameObject[] randomTileSprites;
     public Tile[,] tileGrid;
 
     [Serializable]
@@ -115,19 +117,19 @@ public class GameManagerScript : MonoBehaviour
 
     private void CheckRighthandSide(int i, int j)
     {
-        if (tileGrid[i, j].colorOfTile == tileGrid[i, j + 1].colorOfTile)
+        if (tileGrid[i, j].colorOfTile == tileGrid[i, j + 1].colorOfTile && tileGrid[i, j].colorOfTile != Tile.Colors.None)
             ListOperations(tileGrid[i, j], tileGrid[i, j + 1]); //edge case of first row, check right side only
     }
 
     private void CheckDownside(int i, int j)
     {
-        if (tileGrid[i, j].colorOfTile == tileGrid[i + 1, j].colorOfTile)
+        if (tileGrid[i, j].colorOfTile == tileGrid[i + 1, j].colorOfTile && tileGrid[i, j].colorOfTile != Tile.Colors.None)
             ListOperations(tileGrid[i, j], tileGrid[i + 1, j]); //edge case of last collumn, check downside only
     }
 
     private void CheckUpside(int i, int j)
     {
-        if (tileGrid[i, j].colorOfTile == tileGrid[i - 1, j].colorOfTile)
+        if (tileGrid[i, j].colorOfTile == tileGrid[i - 1, j].colorOfTile && tileGrid[i, j].colorOfTile != Tile.Colors.None)
             ListOperations(tileGrid[i, j], tileGrid[i - 1, j]); //edge case of last collumn, check downside only
     }
 
@@ -200,22 +202,66 @@ public class GameManagerScript : MonoBehaviour
         }
     }
 
-    public void UpdateTileColors()
+
+    public void CreateNewTiles()
     {
-        for (int i = 0; i < rows; i++)
+        List<Tile> newTiles = new List<Tile>();
+        for (int i=0; i<rows; i++)
         {
-            for (int j = 0; j < collumns; j++)
+            for (int j=0; j<collumns; j++)
+            {
+                if (tileGrid[j, i].colorOfTile != Tile.Colors.None)
+                    break;
+                else
+                {
+                    newTiles.Add(tileGrid[j, i]);
+                    Debug.Log("None tile added: " + tileGrid[j, i]);
+                }
+                                     
+            }           
+        }
+    }
+
+    public void HandleHoles(Tile tile)
+    {
+        int columnOfTile = tile.tilesColumn;
+        int rowOfTile = tile.tilesRow;
+
+        for(int i=rowOfTile; i>0; i--)
+        {
+            if (tileGrid[i - 1, columnOfTile].colorOfTile != Tile.Colors.Box)
+                BubbleSwitchTileColors(tileGrid[i, columnOfTile], tileGrid[i - 1, columnOfTile]);
+            else
+                break;
+        }
+
+    }
+
+    public void UpdateColors()
+    {
+        for(int i=0; i<rows; i++)
+        {
+            for(int j =0; j<collumns; j++)
             {
                 tileGrid[i, j].UpdateColors();
             }
         }
     }
 
+    public void BubbleSwitchTileColors(Tile tile1, Tile tile2)
+    {
+        Tile.Colors color = tile1.colorOfTile;
+        tile1.colorOfTile = tile2.colorOfTile;
+        tile2.colorOfTile = color;
+    }
 
 
-    
 
-    
+
+
+
+
+
 
 
 }
