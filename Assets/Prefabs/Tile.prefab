@@ -161,9 +161,19 @@ MonoBehaviour:
   - {fileID: 21300000, guid: a0b9d06501c016e438d0893d58f3bd53, type: 3}
   - {fileID: 21300000, guid: 70afe7011b356e446a5a28db0c0a4e9c, type: 3}
   - {fileID: 21300000, guid: 211c547c9deb53e44a45976f681ba13f, type: 3}
+  boxSprites:
+  - {fileID: 21300000, guid: 1df922a8034e53f4e9c83d5807de7e71, type: 3}
+  - {fileID: 21300000, guid: 870600607e2f31c43841f3b0f53ef504, type: 3}
+  gameManager: {fileID: 0}
+  A: 1
+  B: 2
+  C: 3
   isInAList: 0
   adjacentTiles: []
   colorOfTile: 0
+  tilesRow: 0
+  tilesColumn: 0
+  isOccupied: 1
 --- !u!61 &668428819621554981
 BoxCollider2D:
   m_ObjectHideFlags: 0

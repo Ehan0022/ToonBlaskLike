@@ -6,14 +6,15 @@ using System;
 
 public class Tile : MonoBehaviour
 {
-    [SerializeField] SpriteRenderer spriteOfTile;
+    [SerializeField] public SpriteRenderer spriteOfTile;
 
-    [SerializeField] Sprite[] blueSprites;
-    [SerializeField] Sprite[] yellowSprites;
-    [SerializeField] Sprite[] pinkSprites;
-    [SerializeField] Sprite[] purpleSprites;
-    [SerializeField] Sprite[] greenSprites;
-    [SerializeField] Sprite[] redSprites;
+    [SerializeField] private Sprite[] blueSprites;
+    [SerializeField] private Sprite[] yellowSprites;
+    [SerializeField] private Sprite[] pinkSprites;
+    [SerializeField] private Sprite[] purpleSprites;
+    [SerializeField] private Sprite[] greenSprites;
+    [SerializeField] private Sprite[] redSprites;
+    [SerializeField] public Sprite[] boxSprites;
 
     [SerializeField] GameManagerScript gameManager;
 
@@ -27,7 +28,7 @@ public class Tile : MonoBehaviour
     public int tilesRow;
     public int tilesColumn;
     public bool isOccupied = true;
-
+    private int boxHits = 0;
 
     public enum Colors
     {
@@ -37,7 +38,8 @@ public class Tile : MonoBehaviour
         Purple,
         Green,
         Red,
-        None
+        None,
+        Box
     }
 
 
@@ -65,43 +67,68 @@ public class Tile : MonoBehaviour
     public static List<int> tilesWithHoles = new List<int>();
     private void OnMouseDown()
     {
-        //identify the columns that has popped blocks
-        //identify the deepest hole and match it with the closest existing block
-        tilesWithHoles.Clear();
-        Color color = spriteOfTile.color;
-        color.a = 0;
-        //we will only iterate through columns with holes in them to perform block fallings
-        tilesWithHoles = new List<int>();
-        for (int i = 0; i<adjacentTiles.Count; i++)
+        if(adjacentTiles != null)
         {
-            adjacentTiles[i].spriteOfTile.color = color;
-            adjacentTiles[i].colorOfTile = Colors.None;
-            //I used hashing with the formula rows*10 + columns. This formula will support a maximum of 9x9 grid.
-            tilesWithHoles.Add((int)(adjacentTiles[i].tilesRow * 10 + adjacentTiles[i].tilesColumn));
-            Debug.Log("Eklenen hash: " + (int)(adjacentTiles[i].tilesRow * 10 + adjacentTiles[i].tilesColumn));
-        }
-
-        tilesWithHoles.Sort();
-        for (int i=0; i<tilesWithHoles.Count; i++)
-        {
-            //calculate how many iterasions are needed for tiles to move to the top
-            int rowOfHole = (int)tilesWithHoles[i] / 10;           
-            int collumnOfHole = tilesWithHoles[i] - rowOfHole*10;
-            Debug.Log("Extract edilen bilgi, row: " + rowOfHole + " column: " + collumnOfHole);
-            for(int j = rowOfHole; j>0; j--)
+            //identify the columns that has popped blocks
+            //identify the deepest hole and match it with the closest existing block
+            tilesWithHoles.Clear();
+            Color color = spriteOfTile.color;
+            color.a = 0;
+            //we will only iterate through columns with holes in them to perform block fallings
+            tilesWithHoles = new List<int>();
+            for (int i = 0; i < adjacentTiles.Count; i++)
             {
-                BubbleSwitchTileColors(gameManager.tileGrid[j, collumnOfHole], gameManager.tileGrid[j - 1, collumnOfHole]);
+                adjacentTiles[i].spriteOfTile.color = color;
+                adjacentTiles[i].colorOfTile = Colors.None;
+                //I used hashing with the formula rows*10 + columns. This formula will support a maximum of 9x9 grid.
+                tilesWithHoles.Add((int)(adjacentTiles[i].tilesRow * 10 + adjacentTiles[i].tilesColumn));
+                Debug.Log("Eklenen hash: " + (int)(adjacentTiles[i].tilesRow * 10 + adjacentTiles[i].tilesColumn));
             }
-        }
 
-        gameManager.ResetState();
-        gameManager.BundleTiles();
-        gameManager.UpdateTileColors();
-             
+            for (int i = 0; i < adjacentTiles.Count; i++)
+            {
+                //this loop will check if either there was a pop at the right, left, top or bottom of the boxes
+                if (gameManager.tileGrid[gameManager.coordinates[i].row-1, gameManager.coordinates[i].column] == adjacentTiles[i]) //top of the box              
+                    gameManager.tileGrid[gameManager.coordinates[i].row, gameManager.coordinates[i].column].boxHits++;  
+                
+                if (gameManager.tileGrid[gameManager.coordinates[i].row +1, gameManager.coordinates[i].column] == adjacentTiles[i])//bottom of the box             
+                    gameManager.tileGrid[gameManager.coordinates[i].row, gameManager.coordinates[i].column].boxHits++; 
+                
+                if (gameManager.tileGrid[gameManager.coordinates[i].row , gameManager.coordinates[i].column+1] == adjacentTiles[i]) //right of the box              
+                    gameManager.tileGrid[gameManager.coordinates[i].row, gameManager.coordinates[i].column].boxHits++; 
+                
+                if (gameManager.tileGrid[gameManager.coordinates[i].row , gameManager.coordinates[i].column-1] == adjacentTiles[i])//left of the box     
+                    gameManager.tileGrid[gameManager.coordinates[i].row, gameManager.coordinates[i].column].boxHits++;
+                
+            }
+
+            tilesWithHoles.Sort();
+            for (int i = 0; i < tilesWithHoles.Count; i++)
+            {
+                //calculate how many iterasions are needed for tiles to move to the top
+                int rowOfHole = (int)tilesWithHoles[i] / 10;
+                int collumnOfHole = tilesWithHoles[i] - rowOfHole * 10;
+                Debug.Log("Extract edilen bilgi, row: " + rowOfHole + " column: " + collumnOfHole);
+                for (int j = rowOfHole; j > 0; j--)
+                {
+                    if (gameManager.tileGrid[j, collumnOfHole].colorOfTile == Colors.Box)
+                        break;
+                    if (gameManager.tileGrid[j - 1, collumnOfHole].colorOfTile == Colors.Box)
+                        break;
+                    BubbleSwitchTileColors(gameManager.tileGrid[j, collumnOfHole], gameManager.tileGrid[j - 1, collumnOfHole]);
+                }
+            }
+
+            gameManager.ResetState();
+            gameManager.BundleTiles();
+            gameManager.UpdateTileColors();
+        }
+                  
     }
 
     private void BubbleSwitchTileColors(Tile tile1, Tile tile2)
     {
+        
         Colors color = tile1.colorOfTile;
         tile1.colorOfTile = tile2.colorOfTile;
         tile2.colorOfTile = color;
@@ -165,12 +192,19 @@ public class Tile : MonoBehaviour
             color.a = 0;
             spriteOfTile.color = color;
         }
-        else
-        {
-            spriteOfTile.sprite = greenSprites[b];
+        else if (colorOfTile == Colors.Box)
+        {            
+            spriteOfTile.sprite = boxSprites[boxHits];
             Color color = spriteOfTile.color;
             color.a = 255;
             spriteOfTile.color = color;
+        }
+        else
+        {          
+                spriteOfTile.sprite = greenSprites[b];
+                Color color = spriteOfTile.color;
+                color.a = 255;
+                spriteOfTile.color = color;          
         }
             
     }

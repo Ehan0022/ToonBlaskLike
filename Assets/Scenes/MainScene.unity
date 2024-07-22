@@ -482,18 +482,6 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5559463973049320778, guid: db57f7291b3eb7f49ae837f8ebf8d33f, type: 3}
-      propertyPath: A
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5559463973049320778, guid: db57f7291b3eb7f49ae837f8ebf8d33f, type: 3}
-      propertyPath: B
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 5559463973049320778, guid: db57f7291b3eb7f49ae837f8ebf8d33f, type: 3}
-      propertyPath: C
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 5559463973049320778, guid: db57f7291b3eb7f49ae837f8ebf8d33f, type: 3}
       propertyPath: gameManager
       value: 
       objectReference: {fileID: 1576719410}
@@ -639,6 +627,9 @@ MonoBehaviour:
   - {fileID: 1477779488}
   rows: 3
   collumns: 3
+  coordinates:
+  - row: 1
+    column: 1
 --- !u!4 &1576719411
 Transform:
   m_ObjectHideFlags: 0

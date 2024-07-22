@@ -9,10 +9,17 @@ public class GameManagerScript : MonoBehaviour
     [SerializeField] private Tile[] Tiles;
     [SerializeField] public int rows;
     [SerializeField] public int collumns;
-
-    
-
     public Tile[,] tileGrid;
+
+    [Serializable]
+    public struct Coordinates
+    {
+        public int row;
+        public int column;
+    }
+
+    [SerializeField] public Coordinates[] coordinates;
+
 
     void Awake()
     {
@@ -32,6 +39,12 @@ public class GameManagerScript : MonoBehaviour
                 a++;
             }
        }
+
+        for(int i =0; i<coordinates.Length; i++)
+        {
+            tileGrid[coordinates[i].row, coordinates[i].column].colorOfTile = Tile.Colors.Box;
+        }
+
         BundleTiles();
         for (int i = 0; i < rows; i++)
         {
@@ -40,6 +53,8 @@ public class GameManagerScript : MonoBehaviour
                 tileGrid[i, j].UpdateColors();
             }
         }
+        
+
     }
 
     // Update is called once per frame
