@@ -16,6 +16,7 @@ public class Tile : MonoBehaviour
     [SerializeField] private Sprite[] redSprites;
     [SerializeField] public Sprite[] boxSprites;
     [SerializeField] public Animator animator;
+    [SerializeField] private AudioSource audioSource;
 
     [SerializeField] GameManagerScript gameManager;
 
@@ -29,7 +30,10 @@ public class Tile : MonoBehaviour
     public int tilesRow;
     public int tilesColumn;
     public bool isOccupied = true;
+    
     [SerializeField] private int boxHits = 0;
+
+     
 
     public enum Colors
     {
@@ -81,7 +85,9 @@ public class Tile : MonoBehaviour
                 adjacentTiles[i].spriteOfTile.color = color;
                 adjacentTiles[i].colorOfTile = Colors.None;
                 adjacentTiles[i].animator.SetTrigger("Pop");
+                audioSource.Play();               
                 gameManager.HandleHoles(adjacentTiles[i]);
+
             }
             
 
@@ -115,8 +121,7 @@ public class Tile : MonoBehaviour
                         breakOuter = true;
                     }    
                 }
-                if (breakOuter)
-                    break;
+                
             }
 
 
@@ -136,11 +141,11 @@ public class Tile : MonoBehaviour
         int b = 0;
         if (adjacentTiles != null)
         {
-            if (adjacentTiles.Count == 2)
+            if (adjacentTiles.Count >= 2 && adjacentTiles.Count < 4 )
                 b = 1;
-            else if (adjacentTiles.Count == 3)
+            else if (adjacentTiles.Count >= 4 && adjacentTiles.Count < 6)
                 b = 2;
-            else if (adjacentTiles.Count >= 4)
+            else if (adjacentTiles.Count >= 6 && adjacentTiles.Count < 8)
                 b = 3;
         }
 

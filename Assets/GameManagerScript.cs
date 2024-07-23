@@ -14,6 +14,7 @@ public class GameManagerScript : MonoBehaviour
     List<List<Tile>> adjacentTilesList = new List<List<Tile>>(); 
     public Tile[,] tileGrid;
 
+
     [Serializable]
     public struct Coordinates
     {
@@ -119,11 +120,18 @@ public class GameManagerScript : MonoBehaviour
         //the game is locked, bundle a random tile with another
         if(adjacentTilesList.Count == 0)
         {
-            int randomRow = UnityEngine.Random.Range(1, rows-1);
-            int randomColumn = UnityEngine.Random.Range(1, collumns-1);
-            int fixPoint = UnityEngine.Random.Range(1,5);
+            int randomRow;
+            int randomColumn;
+            int fixPoint;
+            do
+            {
+                randomRow = UnityEngine.Random.Range(1, rows - 1);
+                randomColumn = UnityEngine.Random.Range(1, collumns - 1);
+                fixPoint = UnityEngine.Random.Range(1, 5);
+            } while (tileGrid[randomRow, randomColumn].colorOfTile != Tile.Colors.Box);
+            
 
-            if (fixPoint == 1)
+            if (fixPoint == 1 )
                 tileGrid[randomRow - 1, randomColumn].colorOfTile = tileGrid[randomRow, randomColumn].colorOfTile;
             else if (fixPoint == 2)
                 tileGrid[randomRow +1, randomColumn].colorOfTile = tileGrid[randomRow, randomColumn].colorOfTile;
@@ -159,27 +167,27 @@ public class GameManagerScript : MonoBehaviour
 
     private void ListOperations(Tile tile1, Tile tile2)
     {
-        if(!tile1.isInAList && !tile2.isInAList)
+        if(!tile1.isInAList && !tile2.isInAList && tile1.colorOfTile != Tile.Colors.Box && tile1.colorOfTile != Tile.Colors.Box)
         {
             CreateListAndAddAdjacentTiles(tile1, tile2);
             tile1.isInAList = true;
             tile2.isInAList = true;
         }
-        else if(!tile1.isInAList && tile2.isInAList)
+        else if(!tile1.isInAList && tile2.isInAList && tile1.colorOfTile != Tile.Colors.Box && tile1.colorOfTile != Tile.Colors.Box)
         {
             AddTileToOtherTilesList(tile1, tile2);
             tile1.isInAList = true;
             for (int i = 0; i < tile2.adjacentTiles.Count; i++)
                 tile2.adjacentTiles[i].UpdateColors();
         }
-        else if(tile1.isInAList && !tile2.isInAList)
+        else if(tile1.isInAList && !tile2.isInAList && tile1.colorOfTile != Tile.Colors.Box && tile1.colorOfTile != Tile.Colors.Box)
         {
             AddTileToOtherTilesList(tile2, tile1);
             tile2.isInAList = true;
             for (int i = 0; i < tile1.adjacentTiles.Count; i++)
                 tile1.adjacentTiles[i].UpdateColors();
         }
-        else if(tile1.isInAList && tile2.isInAList)
+        else if(tile1.isInAList && tile2.isInAList && tile1.colorOfTile != Tile.Colors.Box && tile1.colorOfTile != Tile.Colors.Box)
         {
             MergeListsOfTiles(tile1, tile2);
             for (int i = 0; i < tile1.adjacentTiles.Count; i++)
