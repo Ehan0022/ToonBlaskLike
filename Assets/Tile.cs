@@ -205,6 +205,7 @@ public class Tile : MonoBehaviour
             {
                 colorOfTile = Colors.None;
                 Color color = spriteOfTile.color;
+                boxHits = 0;
                 color.a = 0;
                 spriteOfTile.color = color;
                 gameManager.HandleHoles(this);

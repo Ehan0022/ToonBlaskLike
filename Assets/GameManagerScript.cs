@@ -129,7 +129,20 @@ public class GameManagerScript : MonoBehaviour
                 randomColumn = UnityEngine.Random.Range(1, collumns - 1);
                 fixPoint = UnityEngine.Random.Range(1, 5);
             } while (tileGrid[randomRow, randomColumn].colorOfTile != Tile.Colors.Box);
-            
+
+            do
+            {
+                if (fixPoint == 1)
+                    tileGrid[randomRow - 1, randomColumn].colorOfTile = tileGrid[randomRow, randomColumn].colorOfTile;
+                else if (fixPoint == 2)
+                    tileGrid[randomRow + 1, randomColumn].colorOfTile = tileGrid[randomRow, randomColumn].colorOfTile;
+                else if (fixPoint == 3)
+                    tileGrid[randomRow, randomColumn - 1].colorOfTile = tileGrid[randomRow, randomColumn].colorOfTile;
+                else if (fixPoint == 4)
+                    tileGrid[randomRow, randomColumn + 1].colorOfTile = tileGrid[randomRow, randomColumn].colorOfTile;
+
+            } while (tileGrid[randomRow - 1, randomColumn].colorOfTile != Tile.Colors.Box && tileGrid[randomRow + 1, randomColumn].colorOfTile != Tile.Colors.Box && tileGrid[randomRow, randomColumn + 1].colorOfTile != Tile.Colors.Box && tileGrid[randomRow, randomColumn - 1].colorOfTile != Tile.Colors.Box);
+
 
             if (fixPoint == 1 )
                 tileGrid[randomRow - 1, randomColumn].colorOfTile = tileGrid[randomRow, randomColumn].colorOfTile;
