@@ -216,10 +216,20 @@ public class GameManagerScript : MonoBehaviour
                 {
                     newTiles.Add(tileGrid[j, i]);
                     Debug.Log("None tile added: " + tileGrid[j, i]);
-                }
-                                     
+                }                                   
             }           
         }
+
+
+        StartCoroutine(WaitCoroutineForNewColors(newTiles));      
+    }
+
+    
+    public void AssignNewRandomColors(Tile tile)
+    {
+        Tile.Colors randomColor = (Tile.Colors)UnityEngine.Random.Range(0, 6);
+        tile.colorOfTile = randomColor;
+        tile.UpdateColors();
     }
 
     public void HandleHoles(Tile tile)
@@ -255,11 +265,50 @@ public class GameManagerScript : MonoBehaviour
         tile2.colorOfTile = color;
     }
 
+    IEnumerator WaitCoroutineForNewColors(List<Tile> newTiles)
+    {
+
+        
+
+
+      
+        yield return new WaitForSeconds(1);
+        for (int i = 0; i < newTiles.Count; i++)
+        {
+            AssignNewRandomColors(newTiles[i]);
+        }
+        BundleTiles();
+        UpdateColors();
+
+
+        Debug.Log("1 saniye gecti: " + Time.time);
+    }
+
+    private void SpawnFallAnimation(Tile tile, Tile.Colors randomColor)
+    {
+        Instantiate(GetSprite(randomColor), spawners[tile.tilesColumn].transform.position, Quaternion.identity);
+    }
+    
 
 
 
 
 
+    private GameObject GetSprite(Tile.Colors color)
+    {
+        if (color == Tile.Colors.Blue)
+            return randomTileSprites[0];
+        if (color == Tile.Colors.Green)
+            return randomTileSprites[1];
+        if (color == Tile.Colors.Pink)
+            return randomTileSprites[2];
+        if (color == Tile.Colors.Purple)
+            return randomTileSprites[3];
+        if (color == Tile.Colors.Red)
+            return randomTileSprites[4];
+        else
+            return randomTileSprites[5];
+    }
 
 
 

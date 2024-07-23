@@ -46,7 +46,7 @@ public class Tile : MonoBehaviour
 
     void Start()
     {
-        colorOfTile = (Colors)UnityEngine.Random.Range(0, 3);
+        colorOfTile = (Colors)UnityEngine.Random.Range(0, 6);
 
         if (colorOfTile == Colors.Red)
             spriteOfTile.sprite = redSprites[0];
@@ -119,10 +119,10 @@ public class Tile : MonoBehaviour
 
 
             gameManager.UpdateColors();
-            gameManager.ResetState();
-            gameManager.BundleTiles();
+            gameManager.ResetState();           
             gameManager.CreateNewTiles();
-            gameManager.UpdateColors();
+            //gameManager.BundleTiles();  BundleTiles is instead called within the CreateNewTiles function
+            //gameManager.UpdateColors(); UpdateColors is instead called within the CreateNewTiles function
         }
 
     }
