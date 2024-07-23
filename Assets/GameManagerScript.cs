@@ -203,31 +203,10 @@ public class GameManagerScript : MonoBehaviour
     }
 
 
-    public void CreateNewTiles()
-    {
-        List<Tile> newTiles = new List<Tile>();
-        for (int i=0; i<rows; i++)
-        {
-            for (int j=0; j<collumns; j++)
-            {
-                if (tileGrid[j, i].colorOfTile != Tile.Colors.None)
-                    break;
-                else
-                {
-                    newTiles.Add(tileGrid[j, i]);
-                    Debug.Log("None tile added: " + tileGrid[j, i]);
-                }                                   
-            }           
-        }
-
-
-        StartCoroutine(WaitCoroutineForNewColors(newTiles));      
-    }
-
+   
     
-    public void AssignNewRandomColors(Tile tile)
-    {
-        Tile.Colors randomColor = (Tile.Colors)UnityEngine.Random.Range(0, 6);
+    public void AssignNewRandomColors(Tile tile, Tile.Colors randomColor)
+    {        
         tile.colorOfTile = randomColor;
         tile.UpdateColors();
     }
@@ -265,32 +244,70 @@ public class GameManagerScript : MonoBehaviour
         tile2.colorOfTile = color;
     }
 
+
+    public void CreateNewTiles()
+    {
+        List<Tile> newTiles = new List<Tile>();
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < collumns; j++)
+            {
+                if (tileGrid[j, i].colorOfTile != Tile.Colors.None)
+                    break;
+                else
+                {
+                    newTiles.Add(tileGrid[j, i]);
+                    Debug.Log("None tile added: " + tileGrid[j, i]);
+                }
+            }
+        }
+        StartCoroutine(WaitCoroutineForNewColors(newTiles));
+    }
+
     IEnumerator WaitCoroutineForNewColors(List<Tile> newTiles)
     {
+        Tile.Colors randomColor = (Tile.Colors)UnityEngine.Random.Range(0, 6);
+        //Debug.Log("coroutine basladi: " + Time.time);
 
-        
+        float timeForFall = 0.2f;
 
+        List<FallAnimationBlock> animationBlocks = new List<FallAnimationBlock>();
+        for (int i=newTiles.Count-1; i>=0; i--)
+        {
+            GameObject a = SpawnFallAnimation(newTiles[i], randomColor);
+            Debug.Log("Created : " + a);
+            FallAnimationBlock fallAnimBlock = a.GetComponent<FallAnimationBlock>();
+            animationBlocks.Add(fallAnimBlock);
+            fallAnimBlock.SetAttributes(timeForFall, newTiles[i].transform);
+            Debug.Log("Loop icindeki iki saniye basladi");
+            yield return new WaitForSeconds(timeForFall);
+            Debug.Log("Loop icindeki iki saniye bitti");
+        }
 
-      
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(0.001f);
         for (int i = 0; i < newTiles.Count; i++)
         {
-            AssignNewRandomColors(newTiles[i]);
+            AssignNewRandomColors(newTiles[i],randomColor);
         }
         BundleTiles();
         UpdateColors();
 
+        for(int i=0; i<animationBlocks.Count; i++)
+        {
+            Destroy(animationBlocks[i].gameObject);
+        }
+        animationBlocks.Clear();
+        UpdateColors();
 
-        Debug.Log("1 saniye gecti: " + Time.time);
+        Debug.Log("2 saniye gecti: " + Time.time);
     }
 
-    private void SpawnFallAnimation(Tile tile, Tile.Colors randomColor)
+    private GameObject SpawnFallAnimation(Tile tile, Tile.Colors randomColor)
     {
-        Instantiate(GetSprite(randomColor), spawners[tile.tilesColumn].transform.position, Quaternion.identity);
+        GameObject animatedBlock = Instantiate(GetSprite(randomColor), spawners[tile.tilesColumn].transform.position, Quaternion.identity);
+        return animatedBlock;
     }
     
-
-
 
 
 

@@ -138,7 +138,7 @@ public class Tile : MonoBehaviour
                 b = 1;
             else if (adjacentTiles.Count == 3)
                 b = 2;
-            else if (adjacentTiles.Count == 4)
+            else if (adjacentTiles.Count >= 4)
                 b = 3;
         }
 
@@ -203,7 +203,7 @@ public class Tile : MonoBehaviour
                 gameManager.HandleHoles(this);
                 for(int i=tilesRow+1; i<gameManager.rows; i++)
                 {
-                    Debug.Log("kutunun altýnda belirtilen satýrda hole arama: " + i);
+                    //Debug.Log("kutunun altýnda belirtilen satýrda hole arama: " + i);
                     if (gameManager.tileGrid[i, tilesColumn].colorOfTile == Colors.None)
                         gameManager.HandleHoles(gameManager.tileGrid[i, tilesColumn]);
                 }
