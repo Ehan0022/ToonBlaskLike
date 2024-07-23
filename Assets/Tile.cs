@@ -15,6 +15,7 @@ public class Tile : MonoBehaviour
     [SerializeField] private Sprite[] greenSprites;
     [SerializeField] private Sprite[] redSprites;
     [SerializeField] public Sprite[] boxSprites;
+    [SerializeField] public Animator animator;
 
     [SerializeField] GameManagerScript gameManager;
 
@@ -79,6 +80,7 @@ public class Tile : MonoBehaviour
             {
                 adjacentTiles[i].spriteOfTile.color = color;
                 adjacentTiles[i].colorOfTile = Colors.None;
+                adjacentTiles[i].animator.SetTrigger("Pop");
                 gameManager.HandleHoles(adjacentTiles[i]);
             }
             

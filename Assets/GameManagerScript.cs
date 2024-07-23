@@ -11,6 +11,7 @@ public class GameManagerScript : MonoBehaviour
     [SerializeField] public int collumns;
     [SerializeField] GameObject[] spawners;
     [SerializeField] GameObject[] randomTileSprites;
+    List<List<Tile>> adjacentTilesList = new List<List<Tile>>(); 
     public Tile[,] tileGrid;
 
     [Serializable]
@@ -38,6 +39,7 @@ public class GameManagerScript : MonoBehaviour
                 tileGrid[i,j] = Tiles[a];
                 tileGrid[i, j].tilesRow = i;
                 tileGrid[i, j].tilesColumn = j;
+                Debug.Log(tileGrid[i, j]);
                 a++;
             }
        }
@@ -113,6 +115,27 @@ public class GameManagerScript : MonoBehaviour
             }
         }
 
+        Debug.Log(adjacentTilesList.Count);
+        //the game is locked, bundle a random tile with another
+        if(adjacentTilesList.Count == 0)
+        {
+            int randomRow = UnityEngine.Random.Range(1, rows-1);
+            int randomColumn = UnityEngine.Random.Range(1, collumns-1);
+            int fixPoint = UnityEngine.Random.Range(1,5);
+
+            if (fixPoint == 1)
+                tileGrid[randomRow - 1, randomColumn].colorOfTile = tileGrid[randomRow, randomColumn].colorOfTile;
+            else if (fixPoint == 2)
+                tileGrid[randomRow +1, randomColumn].colorOfTile = tileGrid[randomRow, randomColumn].colorOfTile;
+            else if (fixPoint == 3)
+                tileGrid[randomRow , randomColumn-1].colorOfTile = tileGrid[randomRow, randomColumn].colorOfTile;
+            else if (fixPoint == 4)
+                tileGrid[randomRow , randomColumn+1].colorOfTile = tileGrid[randomRow, randomColumn].colorOfTile;
+
+            UpdateColors();
+            BundleTiles();
+        }
+
     }
 
     private void CheckRighthandSide(int i, int j)
@@ -168,6 +191,7 @@ public class GameManagerScript : MonoBehaviour
     private void CreateListAndAddAdjacentTiles(Tile tile1, Tile tile2)
     {
         List<Tile> adjList = new List<Tile>();
+        adjacentTilesList.Add(adjList);
         adjList.Add(tile1);
         adjList.Add(tile2);
         tile1.adjacentTiles = adjList;
@@ -192,6 +216,7 @@ public class GameManagerScript : MonoBehaviour
     //color adjusting and state resetting is done within the same loop for better performance
     public void ResetState()
     {
+        adjacentTilesList.Clear();
         for(int i=0; i<rows; i++)
         {
             for(int j =0; j<collumns; j++)
@@ -264,30 +289,30 @@ public class GameManagerScript : MonoBehaviour
         StartCoroutine(WaitCoroutineForNewColors(newTiles));
     }
 
+    [SerializeField] private float timeForFall;
     IEnumerator WaitCoroutineForNewColors(List<Tile> newTiles)
     {
-        Tile.Colors randomColor = (Tile.Colors)UnityEngine.Random.Range(0, 6);
+        List<Tile.Colors> colorsUsed = new List<Tile.Colors>();
         //Debug.Log("coroutine basladi: " + Time.time);
-
-        float timeForFall = 0.2f;
 
         List<FallAnimationBlock> animationBlocks = new List<FallAnimationBlock>();
         for (int i=newTiles.Count-1; i>=0; i--)
         {
+            Tile.Colors randomColor = (Tile.Colors)UnityEngine.Random.Range(0, 6);
+            colorsUsed.Add(randomColor);
             GameObject a = SpawnFallAnimation(newTiles[i], randomColor);
-            Debug.Log("Created : " + a);
+            //Debug.Log("Created : " + a);
             FallAnimationBlock fallAnimBlock = a.GetComponent<FallAnimationBlock>();
             animationBlocks.Add(fallAnimBlock);
             fallAnimBlock.SetAttributes(timeForFall, newTiles[i].transform);
-            Debug.Log("Loop icindeki iki saniye basladi");
+           // Debug.Log("Loop icindeki iki saniye basladi");
             yield return new WaitForSeconds(timeForFall);
-            Debug.Log("Loop icindeki iki saniye bitti");
+           // Debug.Log("Loop icindeki iki saniye bitti");
         }
-
-        yield return new WaitForSeconds(0.001f);
+        colorsUsed.Reverse();
         for (int i = 0; i < newTiles.Count; i++)
         {
-            AssignNewRandomColors(newTiles[i],randomColor);
+            AssignNewRandomColors(newTiles[i], colorsUsed[i]);
         }
         BundleTiles();
         UpdateColors();
@@ -299,7 +324,7 @@ public class GameManagerScript : MonoBehaviour
         animationBlocks.Clear();
         UpdateColors();
 
-        Debug.Log("2 saniye gecti: " + Time.time);
+       // Debug.Log("2 saniye gecti: " + Time.time);
     }
 
     private GameObject SpawnFallAnimation(Tile tile, Tile.Colors randomColor)
